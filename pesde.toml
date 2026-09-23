@@ -1,0 +1,15 @@
+name = "mimir/mitable"
+version = "0.1.0"
+description = "table utilities"
+authors = ["mimir"]
+repository = "https://github.com/mounirMimir/MiTable"
+license = "MIT"
+includes = ["pesde.toml", "README.md", "LICENSE", "src/**/*"]
+
+[target]
+environment = "roblox"
+lib = "src/init.luau"
+build_files = ["src"]
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
