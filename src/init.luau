@@ -83,6 +83,64 @@ const function DeepCopy(
 	return copy
 end
 
+--[[
+	Recursively compares two values by structure.
+]]
+const function DeepCompare(a: any, b: any, seenA: { [table]: table }, seenB: { [table]: table }): boolean
+	if a == b then
+		return true
+	end
+
+	if type(a) ~= type(b) then
+		return false
+	end
+
+	if type(a) ~= "table" then
+		return false
+	end
+
+	const mappedB = seenA[a]
+
+	if mappedB ~= nil then
+		return mappedB == b
+	end
+
+	const mappedA = seenB[b]
+
+	if mappedA ~= nil then
+		return mappedA == a
+	end
+
+	-- Register before recursion to support cycles and shared references.
+	seenA[a] = b
+	seenB[b] = a
+
+	-- Tables cannot contain nil values, so this gives us an exact count.
+	local count = 0
+
+	for _ in b do
+		count += 1
+	end
+
+	for key, value in a do
+		count -= 1
+
+		if count < 0 then
+			return false
+		end
+
+		if b[key] == nil then
+			return false
+		end
+
+		if not DeepCompare(value, b[key], seenA, seenB) then
+			return false
+		end
+	end
+
+	return count == 0
+end
+
 function MiTable.Copy<T>(tb: T, config: CopyConfig?): T
 	if config == nil or config.Deep == nil then
 		return table.clone(tb)
@@ -96,7 +154,11 @@ function MiTable.Copy<T>(tb: T, config: CopyConfig?): T
 		return table.clone(tb)
 	end
 
-	return DeepCopy(tb, keySettings, valueSettings, {})
+	return DeepCopy(tb, keySettings, valueSettings, {}) :: T
+end
+
+function MiTable.Compare(a: any, b: any): boolean
+	return DeepCompare(a, b, {}, {})
 end
 
 return MiTable
