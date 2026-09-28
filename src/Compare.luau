@@ -5,8 +5,9 @@
 --// Types
 
 const Types = require("./Types")
+const Singletons = require("./Singletons")
 
-type table<K = any, V = any> = Types.table<K, V>
+type Map<K = any, V = any> = Types.Map<K, V>
 
 type CompareIgnore = { [any]: boolean }
 
@@ -19,7 +20,7 @@ type CompareOptions = {
 
 --// Functions
 
-const function DeepCompare(a: any, b: any, seenA: table<table, table>, seenB: table<table, table>): boolean
+const function DeepCompare(a: any, b: any, seenA: Map<Map, Map>, seenB: Map<Map, Map>): boolean
 	if a == b then
 		return true
 	end
@@ -31,6 +32,10 @@ const function DeepCompare(a: any, b: any, seenA: table<table, table>, seenB: ta
 	end
 
 	if typeA ~= "table" then
+		return false
+	end
+
+	if Singletons.Is(a) or Singletons.Is(b) then
 		return false
 	end
 
@@ -78,8 +83,8 @@ const function DeepCompareIgnore(
 	a: any,
 	b: any,
 	ignore: CompareIgnore,
-	seenA: table<table, table>,
-	seenB: table<table, table>
+	seenA: Map<Map, Map>,
+	seenB: Map<Map, Map>
 ): boolean
 	if a == b then
 		return true
@@ -92,6 +97,10 @@ const function DeepCompareIgnore(
 	end
 
 	if typeA ~= "table" then
+		return false
+	end
+
+	if Singletons.Is(a) or Singletons.Is(b) then
 		return false
 	end
 
@@ -144,8 +153,8 @@ const function DeepCompareIgnoreAtDepth(
 	b: any,
 	ignoreAtDepth: CompareIgnoreAtDepth,
 	depth: number,
-	seenA: table<table, table>,
-	seenB: table<table, table>
+	seenA: Map<Map, Map>,
+	seenB: Map<Map, Map>
 ): boolean
 	if a == b then
 		return true
@@ -158,6 +167,10 @@ const function DeepCompareIgnoreAtDepth(
 	end
 
 	if typeA ~= "table" then
+		return false
+	end
+
+	if Singletons.Is(a) or Singletons.Is(b) then
 		return false
 	end
 
@@ -235,8 +248,8 @@ const function DeepCompareIgnoreBoth(
 	ignore: CompareIgnore,
 	ignoreAtDepth: CompareIgnoreAtDepth,
 	depth: number,
-	seenA: table<table, table>,
-	seenB: table<table, table>
+	seenA: Map<Map, Map>,
+	seenB: Map<Map, Map>
 ): boolean
 	if a == b then
 		return true
@@ -249,6 +262,10 @@ const function DeepCompareIgnoreBoth(
 	end
 
 	if typeA ~= "table" then
+		return false
+	end
+
+	if Singletons.Is(a) or Singletons.Is(b) then
 		return false
 	end
 
@@ -309,7 +326,7 @@ end
 
 	Depth starts at 1 for keys inside the root table.
 ]]
-return function(a: table, b: table, options: CompareOptions?): boolean
+return function(a: Map, b: Map, options: CompareOptions?): boolean
 	if options == nil then
 		return DeepCompare(a, b, {}, {})
 	end

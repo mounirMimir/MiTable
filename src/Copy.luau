@@ -1,14 +1,16 @@
 --!native
+
 --!optimize 2
 
 --// Types
 
 const Types = require("./Types")
+const Singletons = require("./Singletons")
 
-type table<K = any, V = any> = Types.table<K, V>
+type Map<K = any, V = any> = Types.Map<K, V>
 
 -- Condition must return true for the table to be deeply copied else get references
-type DeepCopyCondition = (tbl: table) -> boolean
+type DeepCopyCondition = (tbl: Map) -> boolean
 
 -- All conditions are ANDed together.
 type DeepCopyConditions = { DeepCopyCondition }
@@ -32,7 +34,7 @@ type CopyConfig = {
 
 --// Functions
 
-const function CheckConditions(tbl: table, conditions: DeepCopyConditions): boolean
+const function CheckConditions(tbl: Map, conditions: DeepCopyConditions): boolean
 	for i = 1, #conditions do
 		if not conditions[i](tbl) then
 			return false
@@ -42,8 +44,12 @@ const function CheckConditions(tbl: table, conditions: DeepCopyConditions): bool
 	return true
 end
 
-const function DeepCopyAll(tbl: table, preserveFrozen: boolean): table
-	local copy: table = table.clone(tbl)
+const function DeepCopyAll(tbl: Map, preserveFrozen: boolean): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
+	local copy: Map = table.clone(tbl)
 
 	for key, value in tbl do
 		if type(key) == "table" then
@@ -55,10 +61,6 @@ const function DeepCopyAll(tbl: table, preserveFrozen: boolean): table
 		end
 
 		copy[key] = value
-
-		--[[copy[if type(key) == "table" then DeepCopyAll(key, preserveFrozen) else key] = if type(value) == "table"
-			then DeepCopyAll(value, preserveFrozen)
-			else value]]
 	end
 
 	if preserveFrozen and table.isfrozen(tbl) then
@@ -68,7 +70,11 @@ const function DeepCopyAll(tbl: table, preserveFrozen: boolean): table
 	return copy
 end
 
-const function DeepCopyAllReferenced(tbl: table, preserveFrozen: boolean, seen: { [table]: table }): table
+const function DeepCopyAllReferenced(tbl: Map, preserveFrozen: boolean, seen: Map<Map, Map>): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
 	const existing = seen[tbl]
 
 	if existing ~= nil then
@@ -76,6 +82,7 @@ const function DeepCopyAllReferenced(tbl: table, preserveFrozen: boolean, seen: 
 	end
 
 	local copy = table.clone(tbl)
+
 	seen[tbl] = copy
 
 	for key, value in tbl do
@@ -98,8 +105,12 @@ const function DeepCopyAllReferenced(tbl: table, preserveFrozen: boolean, seen: 
 	return copy
 end
 
-const function DeepCopyKeys(tbl: table, preserveFrozen: boolean): table
-	local copy: table = table.clone(tbl)
+const function DeepCopyKeys(tbl: Map, preserveFrozen: boolean): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
+	local copy: Map = table.clone(tbl)
 
 	for key, value in tbl do
 		if type(key) == "table" then
@@ -116,7 +127,11 @@ const function DeepCopyKeys(tbl: table, preserveFrozen: boolean): table
 	return copy
 end
 
-const function DeepCopyKeysReferenced(tbl: table, preserveFrozen: boolean, seen: { [table]: table }): table
+const function DeepCopyKeysReferenced(tbl: Map, preserveFrozen: boolean, seen: Map<Map, Map>): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
 	const existing = seen[tbl]
 
 	if existing ~= nil then
@@ -124,6 +139,7 @@ const function DeepCopyKeysReferenced(tbl: table, preserveFrozen: boolean, seen:
 	end
 
 	local copy = table.clone(tbl)
+
 	seen[tbl] = copy
 
 	for key, value in tbl do
@@ -142,8 +158,12 @@ const function DeepCopyKeysReferenced(tbl: table, preserveFrozen: boolean, seen:
 	return copy
 end
 
-const function DeepCopyValues(tbl: table, preserveFrozen: boolean): table
-	local copy: table = table.clone(tbl)
+const function DeepCopyValues(tbl: Map, preserveFrozen: boolean): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
+	local copy: Map = table.clone(tbl)
 
 	for key, value in tbl do
 		if type(value) == "table" then
@@ -160,7 +180,11 @@ const function DeepCopyValues(tbl: table, preserveFrozen: boolean): table
 	return copy
 end
 
-const function DeepCopyValuesReferenced(tbl: table, preserveFrozen: boolean, seen: { [table]: table }): table
+const function DeepCopyValuesReferenced(tbl: Map, preserveFrozen: boolean, seen: Map<Map, Map>): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
 	const existing = seen[tbl]
 
 	if existing ~= nil then
@@ -168,6 +192,7 @@ const function DeepCopyValuesReferenced(tbl: table, preserveFrozen: boolean, see
 	end
 
 	local copy = table.clone(tbl)
+
 	seen[tbl] = copy
 
 	for key, value in tbl do
@@ -187,20 +212,20 @@ const function DeepCopyValuesReferenced(tbl: table, preserveFrozen: boolean, see
 end
 
 const function DeepCopyConfigured(
-	tbl: table,
-
+	tbl: Map,
 	keyDeepCopy: boolean,
 	keySettings: DeepCopySettings?,
-
 	valueDeepCopy: boolean,
 	valueSettings: DeepCopySettings?,
-
 	preserveFrozen: boolean
-): table
-	local copy: table = table.clone(tbl)
+): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
+
+	local copy: Map = table.clone(tbl)
 
 	const keyConditions = if keySettings ~= nil then keySettings.ExtraConditions else nil
-
 	const valueConditions = if valueSettings ~= nil then valueSettings.ExtraConditions else nil
 
 	for key, value in tbl do
@@ -231,29 +256,29 @@ const function DeepCopyConfigured(
 end
 
 const function DeepCopyConfiguredReferenced(
-	tbl: table,
-
+	tbl: Map,
 	keyDeepCopy: boolean,
 	keySettings: DeepCopySettings?,
-
 	valueDeepCopy: boolean,
 	valueSettings: DeepCopySettings?,
-
 	preserveFrozen: boolean,
+	seen: Map<Map, Map>
+): Map
+	if Singletons.Is(tbl) then
+		return tbl
+	end
 
-	seen: { [table]: table }
-): table
 	const existing = seen[tbl]
 
 	if existing ~= nil then
 		return existing
 	end
 
-	local copy = table.clone(tbl)
+	local copy: Map = table.clone(tbl)
+
 	seen[tbl] = copy
 
 	const keyConditions = if keySettings ~= nil then keySettings.ExtraConditions else nil
-
 	const valueConditions = if valueSettings ~= nil then valueSettings.ExtraConditions else nil
 
 	for key, value in tbl do
@@ -328,16 +353,14 @@ end
 
 	PreserveReferences:
 		Preserves circular and shared table references.
-		Disabled by default for better performance.
 
-	ExtraConditions:
-		All conditions must pass for a table to be copied.
-		If a condition fails, the original reference is kept.
-
-	When Key is enabled:
-		Table keys are also recursively copied.
+	Singleton tables are always kept as their original references.
 ]]
 return function<T>(tb: T, config: CopyConfig?): T
+	if Singletons.Is(tb) then
+		return tb
+	end
+
 	if config == nil then
 		return table.clone(tb)
 	end

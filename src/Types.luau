@@ -1,4 +1,4 @@
-export type table<K = any, V = any> = { [K]: V }
+export type Map<K = any, V = any> = { [K]: V }
 
 export type function DeepKeys(ty: type)
 	if not ty:is("table") then
