@@ -1,3 +1,5 @@
+--!optimize 2
+--!native
 const Types = require("./Types")
 
 type Map<K = any, V = any> = Types.Map<K, V>
