@@ -10,5 +10,6 @@ MiTable.Compare = require("@self/Compare")
 MiTable.Singletons = require("@self/Singletons")
 MiTable.SwapRemove = SwapRemove.SwapRemove
 MiTable.SwapRemoveFirstValue = SwapRemove.SwapRemoveFirstValue
+MiTable.DeepFreeze = require("@self/DeepFreeze")
 
 return MiTable
