@@ -239,13 +239,13 @@ const function Resolve(config: CopyConfig, strict: boolean): (Variant?, DeepCopy
 	return variant, keyCondition, valueCondition, preserveReferences
 end
 
-const function Copy<T>(tb: T & Map, config: CopyConfig?): T
+const function Copy<T>(tb: T, config: CopyConfig?): T
 	if type(tb) ~= "table" then
 		error(`MiTable.Copy: expected a table, got {typeof(tb)}`, 2)
 	end
 
 	if IsSingleton(tb) then
-		return tb
+		return tb :: any
 	end
 
 	if config == nil then
